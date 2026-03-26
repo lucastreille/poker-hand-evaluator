@@ -1,11 +1,29 @@
 import { Card, sortCardsByRankDesc, compareCardsByRank } from "./card";
 
-export type HandCategory = "high-card" | "one-pair" | "two-pairs";
+export type HandCategory =
+  | "high-card"
+  | "one-pair"
+  | "two-pairs"
+  | "three-of-a-kind";
 
 export type Hand = {
   category: HandCategory;
   cards: Card[];
 };
+
+function groupCardsByRank(cards: Card[]): Record<string, Card[]> {
+  const groups: Record<string, Card[]> = {};
+
+  for (const card of cards) {
+    if (!groups[card.rank]) {
+      groups[card.rank] = [];
+    }
+
+    groups[card.rank].push(card);
+  }
+
+  return groups;
+}
 
 export function evaluateHighCardHand(cards: Card[]): Hand {
   return {
@@ -28,15 +46,7 @@ export function compareHighCardHands(left: Hand, right: Hand): number {
 
 export function evaluateOnePairHand(cards: Card[]): Hand {
   const sorted = sortCardsByRankDesc(cards);
-  const groups: Record<string, Card[]> = {};
-
-  for (const card of sorted) {
-    if (!groups[card.rank]) {
-      groups[card.rank] = [];
-    }
-
-    groups[card.rank].push(card);
-  }
+  const groups = groupCardsByRank(sorted);
 
   const pair = Object.values(groups).find(group => group.length === 2);
 
@@ -76,15 +86,7 @@ export function compareOnePairHands(left: Hand, right: Hand): number {
 
 export function evaluateTwoPairsHand(cards: Card[]): Hand {
   const sorted = sortCardsByRankDesc(cards);
-  const groups: Record<string, Card[]> = {};
-
-  for (const card of sorted) {
-    if (!groups[card.rank]) {
-      groups[card.rank] = [];
-    }
-
-    groups[card.rank].push(card);
-  }
+  const groups = groupCardsByRank(sorted);
 
   const pairs = Object.values(groups)
     .filter(group => group.length === 2)
@@ -106,10 +108,36 @@ export function evaluateTwoPairsHand(cards: Card[]): Hand {
 
 export function compareTwoPairsHands(left: Hand, right: Hand): number {
   const highPair = compareCardsByRank(left.cards[0], right.cards[0]);
-  if (highPair !== 0) return highPair;
+  if (highPair !== 0) {
+    return highPair;
+  }
 
   const lowPair = compareCardsByRank(left.cards[2], right.cards[2]);
-  if (lowPair !== 0) return lowPair;
+  if (lowPair !== 0) {
+    return lowPair;
+  }
 
   return compareCardsByRank(left.cards[4], right.cards[4]);
+}
+
+export function evaluateThreeOfAKindHand(cards: Card[]): Hand {
+  const sorted = sortCardsByRankDesc(cards);
+  const groups = groupCardsByRank(sorted);
+
+  const threeOfAKind = Object.values(groups).find(group => group.length === 3);
+
+  if (!threeOfAKind) {
+    throw new Error("three of a kind not found");
+  }
+
+  const kickers = Object.values(groups)
+    .filter(group => group.length === 1)
+    .flat();
+
+  const sortedKickers = sortCardsByRankDesc(kickers);
+
+  return {
+    category: "three-of-a-kind",
+    cards: [...threeOfAKind, ...sortedKickers]
+  };
 }
