@@ -103,3 +103,7 @@ export function evaluateTwoPairsHand(cards: Card[]): Hand {
     cards: [...pairs[0], ...pairs[1], ...kicker]
   };
 }
+
+export function compareTwoPairsHands(left: Hand, right: Hand): number {
+  return compareCardsByRank(left.cards[0], right.cards[0]);
+}
