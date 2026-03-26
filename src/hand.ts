@@ -105,5 +105,11 @@ export function evaluateTwoPairsHand(cards: Card[]): Hand {
 }
 
 export function compareTwoPairsHands(left: Hand, right: Hand): number {
-  return compareCardsByRank(left.cards[0], right.cards[0]);
+  const highPair = compareCardsByRank(left.cards[0], right.cards[0]);
+  if (highPair !== 0) return highPair;
+
+  const lowPair = compareCardsByRank(left.cards[2], right.cards[2]);
+  if (lowPair !== 0) return lowPair;
+
+  return compareCardsByRank(left.cards[4], right.cards[4]);
 }
