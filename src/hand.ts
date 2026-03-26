@@ -360,3 +360,46 @@ export function evaluateHand(cards: Card[]): Hand {
 
   return evaluateHighCardHand(cards);
 }
+
+function buildFiveCardCombinations(cards: Card[]): Card[][] {
+  const combinations: Card[][] = [];
+
+  for (let a = 0; a < cards.length - 4; a++) {
+    for (let b = a + 1; b < cards.length - 3; b++) {
+      for (let c = b + 1; c < cards.length - 2; c++) {
+        for (let d = c + 1; d < cards.length - 1; d++) {
+          for (let e = d + 1; e < cards.length; e++) {
+            combinations.push([
+              cards[a],
+              cards[b],
+              cards[c],
+              cards[d],
+              cards[e]
+            ]);
+          }
+        }
+      }
+    }
+  }
+
+  return combinations;
+}
+
+export function findBestHandFromSevenCards(cards: Card[]): Hand {
+  if (cards.length !== 7) {
+    throw new Error("exactly 7 cards are required");
+  }
+
+  const combinations = buildFiveCardCombinations(cards);
+  let bestHand = evaluateHand(combinations[0]);
+
+  for (let index = 1; index < combinations.length; index++) {
+    const currentHand = evaluateHand(combinations[index]);
+
+    if (compareHands(currentHand, bestHand) > 0) {
+      bestHand = currentHand;
+    }
+  }
+
+  return bestHand;
+}
