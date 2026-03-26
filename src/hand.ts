@@ -1,6 +1,6 @@
 import { Card, sortCardsByRankDesc, compareCardsByRank } from "./card";
 
-export type HandCategory = "high-card" | "one-pair";
+export type HandCategory = "high-card" | "one-pair" | "two-pairs";
 
 export type Hand = {
   category: HandCategory;
@@ -57,10 +57,7 @@ export function evaluateOnePairHand(cards: Card[]): Hand {
 }
 
 export function compareOnePairHands(left: Hand, right: Hand): number {
-  const leftPairCard = left.cards[0];
-  const rightPairCard = right.cards[0];
-
-  const pairComparison = compareCardsByRank(leftPairCard, rightPairCard);
+  const pairComparison = compareCardsByRank(left.cards[0], right.cards[0]);
 
   if (pairComparison !== 0) {
     return pairComparison;
@@ -75,4 +72,34 @@ export function compareOnePairHands(left: Hand, right: Hand): number {
   }
 
   return 0;
+}
+
+export function evaluateTwoPairsHand(cards: Card[]): Hand {
+  const sorted = sortCardsByRankDesc(cards);
+  const groups: Record<string, Card[]> = {};
+
+  for (const card of sorted) {
+    if (!groups[card.rank]) {
+      groups[card.rank] = [];
+    }
+
+    groups[card.rank].push(card);
+  }
+
+  const pairs = Object.values(groups)
+    .filter(group => group.length === 2)
+    .sort((left, right) => compareCardsByRank(right[0], left[0]));
+
+  if (pairs.length !== 2) {
+    throw new Error("two pairs not found");
+  }
+
+  const kicker = Object.values(groups)
+    .filter(group => group.length === 1)
+    .flat();
+
+  return {
+    category: "two-pairs",
+    cards: [...pairs[0], ...pairs[1], ...kicker]
+  };
 }
