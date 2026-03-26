@@ -1,6 +1,9 @@
+import { Rank } from "./rank";
+import { Suit } from "./suit";
+
 export class Card {
   constructor(
-    public rank: string,
-    public suit: string
+    public rank: Rank,
+    public suit: Suit
   ) {}
 }
