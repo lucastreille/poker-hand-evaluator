@@ -1,1 +1,1 @@
-export type Suit = "?" | "?" | "?" | "?";
+export type Suit = "S" | "H" | "D" | "C";

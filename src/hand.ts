@@ -17,6 +17,18 @@ export type Hand = {
   cards: Card[];
 };
 
+const handCategoryStrength: Record<HandCategory, number> = {
+  "high-card": 1,
+  "one-pair": 2,
+  "two-pairs": 3,
+  "three-of-a-kind": 4,
+  "straight": 5,
+  "flush": 6,
+  "full-house": 7,
+  "four-of-a-kind": 8,
+  "straight-flush": 9
+};
+
 function groupCardsByRank(cards: Card[]): Record<string, Card[]> {
   const groups: Record<string, Card[]> = {};
 
@@ -135,9 +147,9 @@ export function evaluateThreeOfAKindHand(cards: Card[]): Hand {
 }
 
 export function compareThreeOfAKindHands(left: Hand, right: Hand): number {
-  const threeOfAKindComparison = compareCardsByRank(left.cards[0], right.cards[0]);
-  if (threeOfAKindComparison !== 0) {
-    return threeOfAKindComparison;
+  const threeComparison = compareCardsByRank(left.cards[0], right.cards[0]);
+  if (threeComparison !== 0) {
+    return threeComparison;
   }
 
   for (let index = 3; index < left.cards.length; index++) {
@@ -245,13 +257,11 @@ export function evaluateFourOfAKindHand(cards: Card[]): Hand {
   const groups = groupCardsByRank(sorted);
 
   const fourOfAKind = Object.values(groups).find(group => group.length === 4);
-
   if (!fourOfAKind) {
     throw new Error("four of a kind not found");
   }
 
   const kicker = Object.values(groups).find(group => group.length === 1);
-
   if (!kicker) {
     throw new Error("kicker not found");
   }
@@ -272,15 +282,81 @@ export function compareFourOfAKindHands(left: Hand, right: Hand): number {
 }
 
 export function evaluateStraightFlushHand(cards: Card[]): Hand {
+  evaluateFlushHand(cards);
   const straight = evaluateStraightHand(cards);
-  const flush = evaluateFlushHand(cards);
 
   return {
     category: "straight-flush",
-    cards: flush.cards.length === straight.cards.length ? straight.cards : flush.cards
+    cards: straight.cards
   };
 }
 
 export function compareStraightFlushHands(left: Hand, right: Hand): number {
   return compareStraightHands(left, right);
+}
+
+export function compareHands(left: Hand, right: Hand): number {
+  const categoryComparison =
+    handCategoryStrength[left.category] - handCategoryStrength[right.category];
+
+  if (categoryComparison !== 0) {
+    return categoryComparison;
+  }
+
+  switch (left.category) {
+    case "high-card":
+      return compareHighCardHands(left, right);
+    case "one-pair":
+      return compareOnePairHands(left, right);
+    case "two-pairs":
+      return compareTwoPairsHands(left, right);
+    case "three-of-a-kind":
+      return compareThreeOfAKindHands(left, right);
+    case "straight":
+      return compareStraightHands(left, right);
+    case "flush":
+      return compareFlushHands(left, right);
+    case "full-house":
+      return compareFullHouseHands(left, right);
+    case "four-of-a-kind":
+      return compareFourOfAKindHands(left, right);
+    case "straight-flush":
+      return compareStraightFlushHands(left, right);
+  }
+}
+
+export function evaluateHand(cards: Card[]): Hand {
+  try {
+    return evaluateStraightFlushHand(cards);
+  } catch {}
+
+  try {
+    return evaluateFourOfAKindHand(cards);
+  } catch {}
+
+  try {
+    return evaluateFullHouseHand(cards);
+  } catch {}
+
+  try {
+    return evaluateFlushHand(cards);
+  } catch {}
+
+  try {
+    return evaluateStraightHand(cards);
+  } catch {}
+
+  try {
+    return evaluateThreeOfAKindHand(cards);
+  } catch {}
+
+  try {
+    return evaluateTwoPairsHand(cards);
+  } catch {}
+
+  try {
+    return evaluateOnePairHand(cards);
+  } catch {}
+
+  return evaluateHighCardHand(cards);
 }
