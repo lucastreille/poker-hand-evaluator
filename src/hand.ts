@@ -28,7 +28,6 @@ export function compareHighCardHands(left: Hand, right: Hand): number {
 
 export function evaluateOnePairHand(cards: Card[]): Hand {
   const sorted = sortCardsByRankDesc(cards);
-
   const groups: Record<string, Card[]> = {};
 
   for (const card of sorted) {
@@ -55,4 +54,25 @@ export function evaluateOnePairHand(cards: Card[]): Hand {
     category: "one-pair",
     cards: [...pair, ...sortedKickers]
   };
+}
+
+export function compareOnePairHands(left: Hand, right: Hand): number {
+  const leftPairCard = left.cards[0];
+  const rightPairCard = right.cards[0];
+
+  const pairComparison = compareCardsByRank(leftPairCard, rightPairCard);
+
+  if (pairComparison !== 0) {
+    return pairComparison;
+  }
+
+  for (let index = 2; index < left.cards.length; index++) {
+    const comparison = compareCardsByRank(left.cards[index], right.cards[index]);
+
+    if (comparison !== 0) {
+      return comparison;
+    }
+  }
+
+  return 0;
 }
