@@ -1,10 +1,12 @@
 import { Card, sortCardsByRankDesc, compareCardsByRank } from "./card";
+import { getRankValue } from "./rank";
 
 export type HandCategory =
   | "high-card"
   | "one-pair"
   | "two-pairs"
-  | "three-of-a-kind";
+  | "three-of-a-kind"
+  | "straight";
 
 export type Hand = {
   category: HandCategory;
@@ -158,4 +160,22 @@ export function compareThreeOfAKindHands(left: Hand, right: Hand): number {
   }
 
   return 0;
+}
+
+export function evaluateStraightHand(cards: Card[]): Hand {
+  const sorted = sortCardsByRankDesc(cards);
+
+  for (let index = 0; index < sorted.length - 1; index++) {
+    const currentValue = getRankValue(sorted[index].rank);
+    const nextValue = getRankValue(sorted[index + 1].rank);
+
+    if (currentValue - nextValue !== 1) {
+      throw new Error("straight not found");
+    }
+  }
+
+  return {
+    category: "straight",
+    cards: sorted
+  };
 }
