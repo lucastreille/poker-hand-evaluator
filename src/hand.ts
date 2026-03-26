@@ -1,4 +1,4 @@
-import { Card, sortCardsByRankDesc } from "./card";
+import { Card, sortCardsByRankDesc, compareCardsByRank } from "./card";
 
 export type HandCategory = "high-card";
 
@@ -12,4 +12,16 @@ export function evaluateHighCardHand(cards: Card[]): Hand {
     category: "high-card",
     cards: sortCardsByRankDesc(cards)
   };
+}
+
+export function compareHighCardHands(left: Hand, right: Hand): number {
+  for (let index = 0; index < left.cards.length; index++) {
+    const comparison = compareCardsByRank(left.cards[index], right.cards[index]);
+
+    if (comparison !== 0) {
+      return comparison;
+    }
+  }
+
+  return 0;
 }
