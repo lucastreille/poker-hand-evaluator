@@ -179,3 +179,7 @@ export function evaluateStraightHand(cards: Card[]): Hand {
     cards: sorted
   };
 }
+
+export function compareStraightHands(left: Hand, right: Hand): number {
+  return compareCardsByRank(left.cards[0], right.cards[0]);
+}
