@@ -53,6 +53,9 @@ Chaque comportement important a été ajouté par petits pas :
 - carré sur le board avec kicker décisif
 - flush avec plus de 5 cartes possibles
 
+## Hypothèses sur les entrées
+Les entrées sont supposées valides : aucune carte en double dans les 7 cartes d'un joueur, et les rangs/couleurs respectent le format attendu. Aucune validation explicite n'est effectuée.
+
 ## Lancer les tests
 ```bash
 npm test
