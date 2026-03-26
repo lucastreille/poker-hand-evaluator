@@ -7,7 +7,10 @@ export type HandCategory =
   | "two-pairs"
   | "three-of-a-kind"
   | "straight"
-  | "flush";
+  | "flush"
+  | "full-house"
+  | "four-of-a-kind"
+  | "straight-flush";
 
 export type Hand = {
   category: HandCategory;
@@ -34,37 +37,29 @@ function isWheelStraight(cards: Card[]): boolean {
 }
 
 export function evaluateHighCardHand(cards: Card[]): Hand {
-  return {
-    category: "high-card",
-    cards: sortCardsByRankDesc(cards)
-  };
+  return { category: "high-card", cards: sortCardsByRankDesc(cards) };
 }
 
 export function compareHighCardHands(left: Hand, right: Hand): number {
   for (let index = 0; index < left.cards.length; index++) {
     const comparison = compareCardsByRank(left.cards[index], right.cards[index]);
-
     if (comparison !== 0) {
       return comparison;
     }
   }
-
   return 0;
 }
 
 export function evaluateOnePairHand(cards: Card[]): Hand {
   const sorted = sortCardsByRankDesc(cards);
   const groups = groupCardsByRank(sorted);
-
   const pair = Object.values(groups).find(group => group.length === 2);
 
   if (!pair) {
     throw new Error("no pair found");
   }
 
-  const kickers = Object.values(groups)
-    .filter(group => group.length === 1)
-    .flat();
+  const kickers = Object.values(groups).filter(group => group.length === 1).flat();
 
   return {
     category: "one-pair",
@@ -100,9 +95,7 @@ export function evaluateTwoPairsHand(cards: Card[]): Hand {
     throw new Error("two pairs not found");
   }
 
-  const kicker = Object.values(groups)
-    .filter(group => group.length === 1)
-    .flat();
+  const kicker = Object.values(groups).filter(group => group.length === 1).flat();
 
   return {
     category: "two-pairs",
@@ -127,16 +120,13 @@ export function compareTwoPairsHands(left: Hand, right: Hand): number {
 export function evaluateThreeOfAKindHand(cards: Card[]): Hand {
   const sorted = sortCardsByRankDesc(cards);
   const groups = groupCardsByRank(sorted);
-
   const threeOfAKind = Object.values(groups).find(group => group.length === 3);
 
   if (!threeOfAKind) {
     throw new Error("three of a kind not found");
   }
 
-  const kickers = Object.values(groups)
-    .filter(group => group.length === 1)
-    .flat();
+  const kickers = Object.values(groups).filter(group => group.length === 1).flat();
 
   return {
     category: "three-of-a-kind",
@@ -216,11 +206,81 @@ export function evaluateFlushHand(cards: Card[]): Hand {
 export function compareFlushHands(left: Hand, right: Hand): number {
   for (let index = 0; index < left.cards.length; index++) {
     const comparison = compareCardsByRank(left.cards[index], right.cards[index]);
-
     if (comparison !== 0) {
       return comparison;
     }
   }
 
   return 0;
+}
+
+export function evaluateFullHouseHand(cards: Card[]): Hand {
+  const sorted = sortCardsByRankDesc(cards);
+  const groups = groupCardsByRank(sorted);
+
+  const threeOfAKind = Object.values(groups).find(group => group.length === 3);
+  const pair = Object.values(groups).find(group => group.length === 2);
+
+  if (!threeOfAKind || !pair) {
+    throw new Error("full house not found");
+  }
+
+  return {
+    category: "full-house",
+    cards: [...threeOfAKind, ...pair]
+  };
+}
+
+export function compareFullHouseHands(left: Hand, right: Hand): number {
+  const threeComparison = compareCardsByRank(left.cards[0], right.cards[0]);
+  if (threeComparison !== 0) {
+    return threeComparison;
+  }
+
+  return compareCardsByRank(left.cards[3], right.cards[3]);
+}
+
+export function evaluateFourOfAKindHand(cards: Card[]): Hand {
+  const sorted = sortCardsByRankDesc(cards);
+  const groups = groupCardsByRank(sorted);
+
+  const fourOfAKind = Object.values(groups).find(group => group.length === 4);
+
+  if (!fourOfAKind) {
+    throw new Error("four of a kind not found");
+  }
+
+  const kicker = Object.values(groups).find(group => group.length === 1);
+
+  if (!kicker) {
+    throw new Error("kicker not found");
+  }
+
+  return {
+    category: "four-of-a-kind",
+    cards: [...fourOfAKind, ...kicker]
+  };
+}
+
+export function compareFourOfAKindHands(left: Hand, right: Hand): number {
+  const fourComparison = compareCardsByRank(left.cards[0], right.cards[0]);
+  if (fourComparison !== 0) {
+    return fourComparison;
+  }
+
+  return compareCardsByRank(left.cards[4], right.cards[4]);
+}
+
+export function evaluateStraightFlushHand(cards: Card[]): Hand {
+  const straight = evaluateStraightHand(cards);
+  const flush = evaluateFlushHand(cards);
+
+  return {
+    category: "straight-flush",
+    cards: flush.cards.length === straight.cards.length ? straight.cards : flush.cards
+  };
+}
+
+export function compareStraightFlushHands(left: Hand, right: Hand): number {
+  return compareStraightHands(left, right);
 }
