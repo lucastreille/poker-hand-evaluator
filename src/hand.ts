@@ -403,3 +403,36 @@ export function findBestHandFromSevenCards(cards: Card[]): Hand {
 
   return bestHand;
 }
+
+export type PlayerCards = {
+  playerId: string;
+  cards: Card[];
+};
+
+export type Winner = {
+  playerId: string;
+  hand: Hand;
+};
+
+export function findWinners(players: PlayerCards[]): Winner[] {
+  if (players.length === 0) {
+    return [];
+  }
+
+  const evaluatedPlayers = players.map(player => ({
+    playerId: player.playerId,
+    hand: findBestHandFromSevenCards(player.cards)
+  }));
+
+  let bestWinner = evaluatedPlayers[0];
+
+  for (let index = 1; index < evaluatedPlayers.length; index++) {
+    const currentPlayer = evaluatedPlayers[index];
+
+    if (compareHands(currentPlayer.hand, bestWinner.hand) > 0) {
+      bestWinner = currentPlayer;
+    }
+  }
+
+  return evaluatedPlayers.filter(player => compareHands(player.hand, bestWinner.hand) === 0);
+}
