@@ -6,7 +6,8 @@ export type HandCategory =
   | "one-pair"
   | "two-pairs"
   | "three-of-a-kind"
-  | "straight";
+  | "straight"
+  | "flush";
 
 export type Hand = {
   category: HandCategory;
@@ -25,6 +26,11 @@ function groupCardsByRank(cards: Card[]): Record<string, Card[]> {
   }
 
   return groups;
+}
+
+function isWheelStraight(cards: Card[]): boolean {
+  const ranks = cards.map(card => card.rank);
+  return ["A", "5", "4", "3", "2"].every(rank => ranks.includes(rank));
 }
 
 export function evaluateHighCardHand(cards: Card[]): Hand {
@@ -60,24 +66,20 @@ export function evaluateOnePairHand(cards: Card[]): Hand {
     .filter(group => group.length === 1)
     .flat();
 
-  const sortedKickers = sortCardsByRankDesc(kickers);
-
   return {
     category: "one-pair",
-    cards: [...pair, ...sortedKickers]
+    cards: [...pair, ...sortCardsByRankDesc(kickers)]
   };
 }
 
 export function compareOnePairHands(left: Hand, right: Hand): number {
   const pairComparison = compareCardsByRank(left.cards[0], right.cards[0]);
-
   if (pairComparison !== 0) {
     return pairComparison;
   }
 
   for (let index = 2; index < left.cards.length; index++) {
     const comparison = compareCardsByRank(left.cards[index], right.cards[index]);
-
     if (comparison !== 0) {
       return comparison;
     }
@@ -136,24 +138,20 @@ export function evaluateThreeOfAKindHand(cards: Card[]): Hand {
     .filter(group => group.length === 1)
     .flat();
 
-  const sortedKickers = sortCardsByRankDesc(kickers);
-
   return {
     category: "three-of-a-kind",
-    cards: [...threeOfAKind, ...sortedKickers]
+    cards: [...threeOfAKind, ...sortCardsByRankDesc(kickers)]
   };
 }
 
 export function compareThreeOfAKindHands(left: Hand, right: Hand): number {
   const threeOfAKindComparison = compareCardsByRank(left.cards[0], right.cards[0]);
-
   if (threeOfAKindComparison !== 0) {
     return threeOfAKindComparison;
   }
 
   for (let index = 3; index < left.cards.length; index++) {
     const comparison = compareCardsByRank(left.cards[index], right.cards[index]);
-
     if (comparison !== 0) {
       return comparison;
     }
@@ -164,6 +162,23 @@ export function compareThreeOfAKindHands(left: Hand, right: Hand): number {
 
 export function evaluateStraightHand(cards: Card[]): Hand {
   const sorted = sortCardsByRankDesc(cards);
+
+  if (isWheelStraight(sorted)) {
+    const five = sorted.find(card => card.rank === "5");
+    const four = sorted.find(card => card.rank === "4");
+    const three = sorted.find(card => card.rank === "3");
+    const two = sorted.find(card => card.rank === "2");
+    const ace = sorted.find(card => card.rank === "A");
+
+    if (!five || !four || !three || !two || !ace) {
+      throw new Error("straight not found");
+    }
+
+    return {
+      category: "straight",
+      cards: [five, four, three, two, ace]
+    };
+  }
 
   for (let index = 0; index < sorted.length - 1; index++) {
     const currentValue = getRankValue(sorted[index].rank);
@@ -182,4 +197,30 @@ export function evaluateStraightHand(cards: Card[]): Hand {
 
 export function compareStraightHands(left: Hand, right: Hand): number {
   return compareCardsByRank(left.cards[0], right.cards[0]);
+}
+
+export function evaluateFlushHand(cards: Card[]): Hand {
+  const firstSuit = cards[0].suit;
+  const isFlush = cards.every(card => card.suit === firstSuit);
+
+  if (!isFlush) {
+    throw new Error("flush not found");
+  }
+
+  return {
+    category: "flush",
+    cards: sortCardsByRankDesc(cards)
+  };
+}
+
+export function compareFlushHands(left: Hand, right: Hand): number {
+  for (let index = 0; index < left.cards.length; index++) {
+    const comparison = compareCardsByRank(left.cards[index], right.cards[index]);
+
+    if (comparison !== 0) {
+      return comparison;
+    }
+  }
+
+  return 0;
 }
