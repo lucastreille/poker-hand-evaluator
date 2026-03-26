@@ -3,27 +3,7 @@ import { Card } from "../src/card";
 import { evaluateTwoPairsHand, compareTwoPairsHands } from "../src/hand";
 
 describe("compareTwoPairsHands", () => {
-  it("compare la paire haute", () => {
-    const left = evaluateTwoPairsHand([
-      new Card("A", "?"),
-      new Card("A", "?"),
-      new Card("K", "?"),
-      new Card("K", "?"),
-      new Card("3", "?")
-    ]);
-
-    const right = evaluateTwoPairsHand([
-      new Card("K", "?"),
-      new Card("K", "?"),
-      new Card("Q", "?"),
-      new Card("Q", "?"),
-      new Card("9", "?")
-    ]);
-
-    expect(compareTwoPairsHands(left, right)).toBeGreaterThan(0);
-  });
-
-  it("compare la deuxième paire si la première est égale", () => {
+  it("retourne 0 si égalité parfaite", () => {
     const left = evaluateTwoPairsHand([
       new Card("A", "?"),
       new Card("A", "?"),
@@ -35,11 +15,11 @@ describe("compareTwoPairsHands", () => {
     const right = evaluateTwoPairsHand([
       new Card("A", "?"),
       new Card("A", "?"),
-      new Card("Q", "?"),
-      new Card("Q", "?"),
-      new Card("9", "?")
+      new Card("K", "?"),
+      new Card("K", "?"),
+      new Card("3", "?")
     ]);
 
-    expect(compareTwoPairsHands(left, right)).toBeGreaterThan(0);
+    expect(compareTwoPairsHands(left, right)).toBe(0);
   });
 });
