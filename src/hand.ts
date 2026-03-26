@@ -141,3 +141,21 @@ export function evaluateThreeOfAKindHand(cards: Card[]): Hand {
     cards: [...threeOfAKind, ...sortedKickers]
   };
 }
+
+export function compareThreeOfAKindHands(left: Hand, right: Hand): number {
+  const threeOfAKindComparison = compareCardsByRank(left.cards[0], right.cards[0]);
+
+  if (threeOfAKindComparison !== 0) {
+    return threeOfAKindComparison;
+  }
+
+  for (let index = 3; index < left.cards.length; index++) {
+    const comparison = compareCardsByRank(left.cards[index], right.cards[index]);
+
+    if (comparison !== 0) {
+      return comparison;
+    }
+  }
+
+  return 0;
+}
