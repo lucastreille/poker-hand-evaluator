@@ -436,3 +436,23 @@ export function findWinners(players: PlayerCards[]): Winner[] {
 
   return evaluatedPlayers.filter(player => compareHands(player.hand, bestWinner.hand) === 0);
 }
+
+export type GameResult = {
+  playerId: string;
+  category: HandCategory;
+  chosen5: string[];
+};
+
+function formatCard(card: Card): string {
+  return `${card.rank}${card.suit}`;
+}
+
+export function buildGameResult(players: PlayerCards[]): GameResult[] {
+  const winners = findWinners(players);
+
+  return winners.map(winner => ({
+    playerId: winner.playerId,
+    category: winner.hand.category,
+    chosen5: winner.hand.cards.map(formatCard)
+  }));
+}
